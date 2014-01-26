@@ -1,4 +1,3 @@
-europabank
-==========
+Europabank MPI PHP Library
+==========================
 
-Europabank
