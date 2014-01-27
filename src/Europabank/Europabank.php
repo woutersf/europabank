@@ -283,6 +283,56 @@ class Europabank
 
         }
     }
+
+    /**
+     * @param $id
+     * @param $merchant
+     * @param $transaction
+     *
+     * @return array
+     * @throws APIException
+     */
+    public function status($id, $merchant = array(), $transaction = array())
+    {
+        // Build request
+        $data = array(
+          'Status' => array(
+            'version'     => 1.1,
+            'Merchant'    => array(),
+            'Transaction' => array()
+          )
+        );
+
+        // Prepare data
+        $data['Status']['Merchant']    = $this->_parseMerchantData($merchant);
+        $data['Status']['Transaction'] = $this->_parseTransactionData($transaction);
+
+        // Set id
+        $data['Status']['attributes']['id'] = $id;
+
+        // Calculate Hash
+        if (
+          isset($data['Status']['Merchant']['uid'])
+          && $id
+        ) {
+            $data['Status']['hash'] = sha1(
+              $data['Status']['Merchant']['uid']
+              . $id
+              . $this->clientSecret
+            );
+        }
+
+        // Do call
+        $result = $this->_executeCurl($data);
+
+        // Process the result
+        if (isset($result->Response)) {
+            return $result->Response;
+        } else {
+            throw new APIException($result->Error->errorCode . ": " . $result->Error->errorMessage . " " . $result->Error->errorDetail);
+        }
+    }
+
 }
 
 /**
