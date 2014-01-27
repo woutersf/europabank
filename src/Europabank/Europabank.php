@@ -333,6 +333,46 @@ class Europabank
         }
     }
 
+    public function capture($id, $merchant = array(), $transaction = array())
+    {
+        // Build request
+        $data = array(
+          'Capture' => array(
+            'version'     => 1.1,
+            'Merchant'    => array(),
+            'Transaction' => array()
+          )
+        );
+
+        // Prepare data
+        $data['Capture']['Merchant']    = $this->_parseMerchantData($merchant);
+        $data['Capture']['Transaction'] = $this->_parseTransactionData($transaction);
+
+        // Set id
+        $data['Capture']['attributes']['id'] = $id;
+
+        // Calculate Hash
+        if (
+          isset($data['Capture']['Merchant']['uid'])
+          && $id
+        ) {
+            $data['Capture']['hash'] = sha1(
+              $data['Capture']['Merchant']['uid']
+              . $id
+              . $this->clientSecret
+            );
+        }
+
+        // Do call
+        $result = $this->_executeCurl($data);
+
+        // Process the result
+        if (isset($result->Response)) {
+            return $result->Response;
+        } else {
+            throw new APIException($result->Error->errorCode . ": " . $result->Error->errorMessage . " " . $result->Error->errorDetail);
+        }
+    }
 }
 
 /**
