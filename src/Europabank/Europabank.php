@@ -68,6 +68,56 @@ class Europabank
 
 
     /**
+     * @param array $merchant
+     * @param array $customer
+     * @param array $transaction
+     *
+     * @return mixed
+     * @throws APIException
+     */
+    public function authorize($merchant = array(), $customer = array(), $transaction = array())
+    {
+        // Build request
+        $data = array(
+          'Authorize' => array(
+            'version'     => 1.1,
+            'Merchant'    => array(),
+            'Customer'    => array(),
+            'Transaction' => array()
+          )
+        );
+
+        // Prepare data
+        $data['Authorize']['Merchant']    = $this->_parseMerchantData($merchant);
+        $data['Authorize']['Customer']    = $this->_parseCustomerData($customer);
+        $data['Authorize']['Transaction'] = $this->_parseTransactionData($transaction);
+
+        // Calculate Hash
+        if (
+          isset($data['Authorize']['Merchant']['uid'])
+          && $data['Authorize']['Transaction']['orderid']
+          && $data['Authorize']['Transaction']['amount']
+          && $data['Authorize']['Transaction']['description']
+        ) {
+            $data['Authorize']['hash'] = sha1(
+              $data['Authorize']['Merchant']['uid']
+              . $data['Authorize']['Transaction']['orderid']
+              . $data['Authorize']['Transaction']['amount']
+              . $data['Authorize']['Transaction']['description']
+              . $this->clientSecret
+            );
+        }
+
+        // Do call
+        $result = $this->_executeCurl($data);
+
+        // Process the result
+        if (isset($result->Response->url)) {
+            return (string)$result->Response->url;
+        } else {
+            throw new APIException($result->Error->errorCode . ": " . $result->Error->errorMessage . " " . $result->Error->errorDetail);
+        }
+    }
 
     /**
      * @param $data
