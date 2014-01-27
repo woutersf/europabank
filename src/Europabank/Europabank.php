@@ -66,6 +66,51 @@ class Europabank
         }
     }
 
+
+    /**
+     * @param array $postData
+     *
+     * @return SimpleXMLElement
+     * @throws Exception
+     */
+    private function _executeCurl($postData)
+    {
+        // Build XML
+        $xml = new SimpleXMLElement("<?xml version=\"1.0\"?><MPI_Interface></MPI_Interface>");
+        $this->_arrayToXml($postData, $xml);
+        $xml = $xml->asXML();
+
+        // Set up curl connection
+        $ch = curl_init($this->server);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: text/xml'));
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "$xml");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        // Do request and get response
+        $data = curl_exec($ch);
+        $info = curl_getinfo($ch);
+
+        // Close connection
+        curl_close($ch);
+
+        // Check if return code is in 2xx range
+        if (floor($info['http_code'] / 100) != 2) {
+            $this->errorCode   = $info['http_code'];
+            $this->errorString = "Curl request failed";
+            throw new Exception($this->errorCode . ": " . $this->errorString, $this->errorCode);
+        }
+
+        // Request failed
+        if ($data === false) {
+            $this->errorCode   = curl_errno($ch);
+            $this->errorString = curl_error($ch);
+            throw new Exception($this->errorCode . ": " . $this->errorString, $this->errorCode);
+        }
+
+        return simplexml_load_string($data);
+    }
+
     /**
      * @param $data
      * @param $xml
