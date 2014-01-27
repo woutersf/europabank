@@ -68,6 +68,103 @@ class Europabank
 
 
     /**
+
+    /**
+     * @param $data
+     *
+     * @return mixed
+     */
+    private function _parseMerchantData($data)
+    {
+        $validParameters = array(
+          'uid',
+          'css',
+          'template',
+          'title',
+          'beneficiary',
+          'param',
+          'redirecturl',
+          'redirecttype',
+          'feedbackurl',
+          'feedbacktype',
+          'feedbackemail'
+        );
+
+        // Automatically set Uid
+        if (!isset($data['uid'])) {
+            $data['uid'] = $this->uid;
+        }
+
+        // Unset parameters which are not valid for this section
+        foreach ($data as $key => $value) {
+            if (!in_array($key, $validParameters)) {
+                unset($data[$key]);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param $data
+     *
+     * @return mixed
+     */
+    private function _parseCustomerData($data)
+    {
+        $validParameters = array(
+          'name',
+          'country',
+          'ip',
+          'email',
+          'language'
+        );
+
+        // Automatically set Uid
+        if (!isset($data['uid'])) {
+            $data['uid'] = $this->uid;
+        }
+
+        // Unset parameters which are not valid for this section
+        foreach ($data as $key => $value) {
+            if (!in_array($key, $validParameters)) {
+                unset($data[$key]);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param $data
+     *
+     * @return mixed
+     */
+    private function _parseTransactionData($data)
+    {
+        $validParameters = array(
+          'brand',
+          'orderid',
+          'amount',
+          'description',
+        );
+
+        // Automatically set Uid
+        if (!isset($data['uid'])) {
+            $data['uid'] = $this->uid;
+        }
+
+        // Unset parameters which are not valid for this section
+        foreach ($data as $key => $value) {
+            if (!in_array($key, $validParameters)) {
+                unset($data[$key]);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * @param array $postData
      *
      * @return SimpleXMLElement
