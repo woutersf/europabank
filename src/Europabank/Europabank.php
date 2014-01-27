@@ -65,6 +65,32 @@ class Europabank
             throw new InvalidArgumentException("Server, uid, server secret and client secret are required");
         }
     }
+
+    /**
+     * @param $data
+     * @param $xml
+     */
+    private function _arrayToXml($data, SimpleXMLElement &$xml)
+    {
+        foreach ($data as $key => $value) {
+            if (!is_array($key) && $key == "attributes") {
+                foreach ($value as $attr_key => $attr_value) {
+                    $xml->addAttribute($attr_key, $attr_value);
+                }
+            } elseif (is_array($value)) {
+                if (!is_numeric($key)) {
+                    $subnode = $xml->addChild("{$key}");
+                    $this->_arrayToXml($value, $subnode);
+                } else {
+                    $subnode = $xml->addChild("item{$key}");
+                    $this->_arrayToXml($value, $subnode);
+                }
+            } else {
+                $xml->addChild("{$key}", "{$value}");
+            }
+
+        }
+    }
 }
 
 /**
